@@ -63,8 +63,9 @@ def transform_perspective(img, src):
                       [offset, img_size[1]-offset]])
     M = cv2.getPerspectiveTransform(src, dest)
     warped = cv2.warpPerspective(img, M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
+    warped_gray = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
 
-    return warped, M
+    return warped, warped_gray
 
 
 if __name__ == '__main__':
