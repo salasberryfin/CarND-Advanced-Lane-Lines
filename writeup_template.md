@@ -71,8 +71,8 @@ By also applying a perspective transform and drawing the found corners, it is po
  
 [//]: # (Image References)
 
-![alt text][image1] "Original"
-![alt text][image2]
+![alt text](./camera_cal/calibration3.jpg "Original") ![alt text](./output_images/chessboard_calibration/warped-calibration3.jpg "Undistorted")
+
 
 ### Pipeline (single images)
 
