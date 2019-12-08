@@ -68,8 +68,8 @@ def calibrate_undistort(image, imgpoints, objpoints):
 ```
 As seen in the code snippet, after finding the 9x6 corners in the chessboard image, the exact points of the image are obtained a the undistortion is applied.
 By also applying a perspective transform and drawing the found corners, it is possible to appreciate the correction.
-[image1]: ./camera_cal/calibration3.jpg "Original"
-[image2]: ./output_images/chessboard_calibration/warped-calibration3.jpg "Undistorted"
+![alt text]: (./camera_cal/calibration3.jpg "Original")
+![alt text]: (./output_images/chessboard_calibration/warped-calibration3.jpg) "Undistorted"
  
 
 ![alt text][image1]
