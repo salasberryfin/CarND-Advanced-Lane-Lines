@@ -3,7 +3,7 @@
 [//]: # (Image References)
 
 [image1]: ./camera_cal/calibration3.jpg "Original"
-[image2]: ./test_images/test1.jpg "Road Transformed"
+[image2]: ./output_images/chessboard_calibration/warped-calibration3.jpg "Undistorted"
 [image3]: ./examples/binary_combo_example.jpg "Binary Example"
 [image4]: ./examples/warped_straight_lines.jpg "Warp Example"
 [image5]: ./examples/color_fit_lines.jpg "Fit Visual"
@@ -68,10 +68,9 @@ def calibrate_undistort(image, imgpoints, objpoints):
 ```
 As seen in the code snippet, after finding the 9x6 corners in the chessboard image, the exact points of the image are obtained a the undistortion is applied.
 By also applying a perspective transform and drawing the found corners, it is possible to appreciate the correction.
-![alt text] (./output_images/chessboard_calibration/warped-calibration3.jpg) "Undistorted"
  
 
-![alt text][image1]
+![alt text][image1]![alt text][image2]
 
 ### Pipeline (single images)
 
