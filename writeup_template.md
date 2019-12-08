@@ -1,21 +1,4 @@
-## Writeup Template
-
-### You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
----
-
-**Advanced Lane Finding Project**
-
-The goals / steps of this project are the following:
-
-* Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
-* Apply a distortion correction to raw images.
-* Use color transforms, gradients, etc., to create a thresholded binary image.
-* Apply a perspective transform to rectify binary image ("birds-eye view").
-* Detect lane pixels and fit to find the lane boundary.
-* Determine the curvature of the lane and vehicle position with respect to center.
-* Warp the detected lane boundaries back onto the original image.
-* Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
+## Advanced Lane Finding Project**
 
 [//]: # (Image References)
 
@@ -27,9 +10,18 @@ The goals / steps of this project are the following:
 [image6]: ./examples/example_output.jpg "Output"
 [video1]: ./project_video.mp4 "Video"
 
-## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
+The goal of this project is to build a complete pipeline that automatically detects lane lines from a real video.
 
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
+
+* Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
+* Apply a distortion correction to raw images.
+* Use color transforms, gradients, etc., to create a thresholded binary image.
+* Apply a perspective transform to rectify binary image ("birds-eye view").
+* Detect lane pixels and fit to find the lane boundary.
+* Determine the curvature of the lane and vehicle position with respect to center.
+* Warp the detected lane boundaries back onto the original image.
+* Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
 ---
 
@@ -43,11 +35,42 @@ You're reading it!
 
 #### 1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
 
-The code for this step is contained in the first code cell of the IPython notebook located in "./examples/example.ipynb" (or in lines # through # of the file called `some_file.py`).  
+The camera needs to be calibrated using a series of chessboard images from which we will find the corners and extract a calibration coefficient that will allow to undistort the provided images. 
+``` python
+def find_corners(gray, n):
+    objpoints = []  # 3D real points
+    imgpoints = []  # 2D image points
+    objp = np.zeros((n[0]*n[1], 3), dtype=np.float32)
+    objp[:, :2] = np.mgrid[0:n[0], 0:n[1]].T.reshape(-1, 2)
+    ret, corners = cv2.findChessboardCorners(gray, (n[0], n[1]), None)
+    if ret is True:
+        imgpoints.append(corners)
+        objpoints.append(objp)
+        
+        return imgpoints, objpoints
 
-I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
+    return None
 
-I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
+
+def calibrate_undistort(image, imgpoints, objpoints):
+    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints,
+                                                       imgpoints,
+                                                       image.shape[::-1],
+                                                       None,
+                                                       None)
+    dst = cv2.undistort(image,
+                        mtx,
+                        dist,
+                        None,
+                        mtx)
+
+    return dst, mtx, dist
+```
+As seen in the code snippet, after finding the 9x6 corners in the chessboard image, the exact points of the image are obtained a the undistortion is applied.
+By also applying a perspective transform and drawing the found corners, it is possible to appreciate the correction.
+[image1]: ./camera_cal/calibration3.jpg "Original"
+[image2]: ./output_images/chessboard_calibration/warped-calibration3.jpg "Undistorted"
+ 
 
 ![alt text][image1]
 
