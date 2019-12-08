@@ -9,7 +9,7 @@ import camera_calibration
 output_folder = "./output_images"
 
 calibration_folder = "./camera_cal"
-calibration_image = "calibration17.jpg"
+calibration_image = "calibration3.jpg"
 calibration_path = os.path.join(calibration_folder, calibration_image)
 
 THRESH = (130, 255)
@@ -48,10 +48,10 @@ def get_calibration():
     ny = 6
     image, gray = prepare_image(calibration_path)
     imgpoints, objpoints = camera_calibration.find_corners(gray, (nx, ny))
-    dst = camera_calibration.calibrate_undistort(gray, imgpoints, objpoints)
+    dst, mtx, dist = camera_calibration.calibrate_undistort(gray, imgpoints, objpoints)
     undist_corners, src = camera_calibration.draw_undist_corners(dst, (nx, ny))
 
-    return src
+    return src, mtx, dist
 
 
 def hls_thresh(img, thresh):
@@ -101,7 +101,7 @@ def dir_threshold(gray, abs_sobelx, abs_sobely, sobel_kernel=3, thresh=(0, np.pi
 
 def save_image_example(new_path, output_img):
     img_name = new_path.split("/")[2]
-    output_path = "output_images/road_undistort_dir/dir-{}".format(img_name)
+    output_path = "output_images/new_undist/undist-{}".format(img_name)
     cv2.imwrite(output_path, output_img)
 
 
@@ -110,12 +110,13 @@ def undistort_images(images_list):
         Returns a list of undistorted images from a given set of pictures.
     """
     output_images = []
-    src = get_calibration()
+    src, mtx, dist = get_calibration()
     for new_path in images_list:
         img, gray = prepare_image(new_path)
-        out, out_gray = camera_calibration.transform_perspective(img, src)
+        out = cv2.undistort(img, mtx, dist, None, mtx)
+        out_gray = cv2.cvtColor(out, cv2.COLOR_BGR2GRAY)
         binary_gradient = gradient_magnitude(out, (30, 100))
-        binary_hls = hls_thresh(apply_hls(out), (140, 255))
+        binary_hls = hls_thresh(apply_hls(out), (120, 255))
         abs_sobelx, abs_sobely = sobel(gray, 3)
         binary_dir = dir_threshold(gray, abs_sobelx, abs_sobely, sobel_kernel=15, thresh=(0.7, 1.3))
         image_atts = UndistImage(out,
@@ -124,6 +125,6 @@ def undistort_images(images_list):
                                  binary_gradient,
                                  binary_dir)
         output_images.append(image_atts)
-        # save_image_example(new_path, binary_dir*255)
+        #save_image_example(new_path, out)
 
     return output_images

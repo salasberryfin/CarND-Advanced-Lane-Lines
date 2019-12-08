@@ -43,7 +43,7 @@ def calibrate_undistort(image, imgpoints, objpoints):
                         None,
                         mtx)
 
-    return dst
+    return dst, mtx, dist
     
 
 def draw_undist_corners(img, n):
@@ -55,17 +55,15 @@ def draw_undist_corners(img, n):
         return img, src
 
 
-def transform_perspective(img, src):
-    offset = 100
+def transform_perspective(img, src, offset=100):
     img_size = (img.shape[1], img.shape[0])
-    dest = np.float32([[offset, offset], [img_size[0]-offset, offset],
-                      [img_size[0]-offset, img_size[1]-offset], 
-                      [offset, img_size[1]-offset]])
+    dest = np.float32([[180, 250], [180, 720], [1000, 250], [1000, 720]])
     M = cv2.getPerspectiveTransform(src, dest)
-    warped = cv2.warpPerspective(img, M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
-    warped_gray = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
+    inv = cv2.getPerspectiveTransform(dest, src)
+    warped = cv2.warpPerspective(img, M, (img_size[0], img_size[1]), flags=cv2.INTER_NEAREST)
+    # warped = cv2.warpPerspective(img, M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
 
-    return warped, warped_gray
+    return warped, M, inv
 
 
 if __name__ == '__main__':
