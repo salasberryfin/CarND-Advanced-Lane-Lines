@@ -133,39 +133,39 @@ def __init__(self, image, gray, hls, gradient, direction):
         self.direction = direction
 ```
 
-Original             |   Undistorted
+Undistorted             |   Binary
 :-------------------------:|:-------------------------:
 ![alt text](./output_images/new_undist/undist-3.jpg)  |  ![alt text](./output_images/new_undist/binary-detection/binary-detection-3.jpg)
 
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
+The binary image generated through the the combined manipulating methods in step 2 needs to be transformed to a bird's eye perspective so lane lines can be detected accurately.
 
-```python
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
+First, one of the straight road images is processed so that a rectangular region of interest (where the lane is most likely located) is detected. The perspective transformation will be applied for this particular region, using the following source and destination points.
+
+| Source                   | Destination              | 
+|:------------------------:|:------------------------:| 
+| 570, 470                 | 180, 250                 | 
+| 270, frame.hls.shape[0]  | 180, 720                 |
+| 720, 470                 | 1000, 250                |
+| 1050, frame.hls.shape[0] | 1000, 720                |
+
+With the above points, the `getPerspectiveTransform` method is used to get both the transformation coefficient and the inverse transformations coefficient (which will be used at the end of the project to transform the image back to the original, so the lanes can be plotted on top).
+
+``` python
+def transform_perspective(img, src, offset=100):
+    img_size = (img.shape[1], img.shape[0])
+    dest = np.float32([[180, 250], [180, 720], [1000, 250], [1000, 720]])
+    M = cv2.getPerspectiveTransform(src, dest)
+    inv = cv2.getPerspectiveTransform(dest, src)
+    warped = cv2.warpPerspective(img, M, (img_size[0], img_size[1]), flags=cv2.INTER_NEAREST)
+
+    return warped, M, inv
 ```
 
-This resulted in the following source and destination points:
-
-| Source        | Destination   | 
-|:-------------:|:-------------:| 
-| 585, 460      | 320, 0        | 
-| 203, 720      | 320, 720      |
-| 1127, 720     | 960, 720      |
-| 695, 460      | 960, 0        |
-
-I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
-
-![alt text][image4]
+Binary             |   Bird's eye binary
+:-------------------------:|:-------------------------:
+![alt text](./output_images/new_undist/binary-detection/binary-detection-3.jpg)  |  ![alt text](./output_images/new_undist/bird/birds-eye-3.jpg)
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
