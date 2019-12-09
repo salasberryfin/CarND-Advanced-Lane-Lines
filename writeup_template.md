@@ -169,7 +169,7 @@ Undistorted                |   Bird's eye binary
 
 The lane lines appear considerably parallel, which indicates that the transformation was performed succesfully.
 
-#### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
+#### Lane detection
 
 Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
 
@@ -181,7 +181,10 @@ With the bird's eye view image, the lane lines can be detected using a second or
 
 This part of the code is relatively large, it is located in `img_operation.py`, methods `fit_polynomial` and `identify_lanes`
 
+The magnitudes are converted to meters so that the position of the car in the lane can be properly measured and the curvature can be identified.
+
 Once the detection is done, the image is transformed back into the original perspective and the area contained by the lane lines is drawn into the original undistorted image, obtaining the following result.
+
 
 Undistorted                |   Result
 :-------------------------:|:-------------------------:
@@ -192,9 +195,11 @@ Undistorted                |   Result
 
 ### Pipeline (video)
 
-#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
+#### Video
 
-Here's a [link to my video result](./project_video.mp4)
+The following is a link to the lane detection video.
+
+[![IMAGE ALT TEXT HERE](./output_images/new_undist/final_results/lane-detection-2.jpg)](https://youtu.be/cO7-e5DmqAQ)
 
 ---
 
