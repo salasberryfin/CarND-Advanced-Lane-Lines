@@ -17,8 +17,8 @@ nx = 9
 ny = 6
 
 def find_corners(gray, n):
-    objpoints = []  # 3D real points
-    imgpoints = []  # 2D image points
+    objpoints = []
+    imgpoints = []
     objp = np.zeros((n[0]*n[1], 3), dtype=np.float32)
     objp[:, :2] = np.mgrid[0:n[0], 0:n[1]].T.reshape(-1, 2)
     ret, corners = cv2.findChessboardCorners(gray, (n[0], n[1]), None)
@@ -61,7 +61,6 @@ def transform_perspective(img, src, offset=100):
     M = cv2.getPerspectiveTransform(src, dest)
     inv = cv2.getPerspectiveTransform(dest, src)
     warped = cv2.warpPerspective(img, M, (img_size[0], img_size[1]), flags=cv2.INTER_NEAREST)
-    # warped = cv2.warpPerspective(img, M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
 
     return warped, M, inv
 

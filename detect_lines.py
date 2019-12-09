@@ -21,6 +21,9 @@ straight_list = glob.glob(straight_path)
 
 
 if __name__ == "__main__":
+    """
+        Start image/video processing.
+    """
     white_output = 'test_videos_output/project-video-output.mp4'
     clip1 = VideoFileClip("project_video.mp4")
     white_clip = clip1.fl_image(img_operation.undistort_images)
