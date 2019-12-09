@@ -171,12 +171,6 @@ The lane lines appear considerably parallel, which indicates that the transforma
 
 #### Lane detection
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
-
-![alt text][image5]
-
-#### Identify lane lines
-
 With the bird's eye view image, the lane lines can be detected using a second order polynomial. With this procedure, the lane lines are detected through a sliding window mechanism by analyzing the binary image incrementally (one window at a time) and updating the current position position of the line accordingly. Then, the x and y values are generated for plotting.
 
 This part of the code is relatively large, it is located in `img_operation.py`, methods `fit_polynomial` and `identify_lanes`
