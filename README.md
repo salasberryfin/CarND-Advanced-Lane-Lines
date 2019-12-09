@@ -205,6 +205,8 @@ The following is a link to the lane detection video.
 
 ### Discussion
 
-#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+#### Issues
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+The pipeline is not yet ready to attempt to detect lane lines in a more complex environment. The porject video is a high quality, very clear piece of video with very few light changes or reflections, which makes lane detection relatively easy when applying an algorithm like the one I used. When tryinh to apply this very same process to any of the challenge videos, the lane detection had trouble while being affected by changes of light and darkspots, which made it unusable in a real case scenario.
+
+I tested different combinations of thresholds and transforms but yet had no luck trying to properly adapt to the harder videos, but I assume that these operations are enough to detect lane lines in most situations, when applied properly.
