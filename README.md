@@ -63,7 +63,7 @@ Original             |   Undistorted
 
 ### Pipeline (single images)
 
-#### 1. Provide an example of a distortion-corrected image.
+#### Calibrate & Undistort
 
 After obtaining the distortion-correction coefficients from the chessboard image, the test images can be corrected as depicted below:
 
@@ -77,7 +77,7 @@ Original             |   Undistorted
 
 
 
-#### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
+#### Generate binary image
 
 In order to generate a binary object where the lane lines can be easily identified, a combination of methods are applied to the original undistorted image.
 
@@ -137,9 +137,9 @@ Undistorted             |   Binary
 :-------------------------:|:-------------------------:
 ![alt text](./output_images/new_undist/undist-3.jpg)  |  ![alt text](./output_images/new_undist/binary-detection/binary-detection-3.jpg)
 
-#### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
+#### Perspective transform
 
-The binary image generated through the the combined manipulating methods in step 2 needs to be transformed to a bird's eye perspective so lane lines can be detected accurately.
+The binary image generated through the the combined manipulating methods in the previous step needs to be transformed to a bird's eye perspective so lane lines can be detected accurately.
 
 First, one of the straight road images is processed so that a rectangular region of interest (where the lane is most likely located) is detected. The perspective transformation will be applied for this particular region, using the following source and destination points.
 
@@ -163,9 +163,11 @@ def transform_perspective(img, src, offset=100):
     return warped, M, inv
 ```
 
-Original             |   Bird's eye binary
+Undistorted                |   Bird's eye binary
 :-------------------------:|:-------------------------:
-![alt text](./test_images/test2.jpg)  |  ![alt text](./output_images/new_undist/bird/bird-eye-view-2.jpg)
+![alt text](./output_images/new_undist/undist-3.jpg)  |  ![alt text](./output_images/new_undist/bird/bird-eye-view-2.jpg)
+
+The lane lines appear considerably parallel, which indicates that the transformation was performed succesfully.
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
@@ -173,15 +175,18 @@ Then I did some other stuff and fit my lane lines with a 2nd order polynomial ki
 
 ![alt text][image5]
 
-#### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
+#### Identify lane lines
 
-I did this in lines # through # in my code in `my_other_file.py`
+With the bird's eye view image, the lane lines can be detected using a second order polynomial. With this procedure, the lane lines are detected through a sliding window mechanism by analyzing the binary image incrementally (one window at a time) and updating the current position position of the line accordingly. Then, the x and y values are generated for plotting.
 
-#### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+This part of the code is relatively large, it is located in `img_operation.py`, methods `fit_polynomial` and `identify_lanes`
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+Once the detection is done, the image is transformed back into the original perspective and the area contained by the lane lines is drawn into the original undistorted image, obtaining the following result.
 
-![alt text][image6]
+Undistorted                |   Result
+:-------------------------:|:-------------------------:
+![alt text](./output_images/new_undist/undist-3.jpg)  |  ![alt text](./output_images/new_undist/final_results/lane-detection-3.jpg)
+
 
 ---
 
