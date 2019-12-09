@@ -143,12 +143,12 @@ The binary image generated through the the combined manipulating methods in step
 
 First, one of the straight road images is processed so that a rectangular region of interest (where the lane is most likely located) is detected. The perspective transformation will be applied for this particular region, using the following source and destination points.
 
-| Source                   | Destination              | 
-|:------------------------:|:------------------------:| 
-| 570, 470                 | 180, 250                 | 
-| 270, frame.hls.shape[0]  | 180, 720                 |
-| 720, 470                 | 1000, 250                |
-| 1050, frame.hls.shape[0] | 1000, 720                |
+| Source       | Destination  | 
+|:------------:|:------------:| 
+| 570, 470     | 180, 250     | 
+| 270, y_size  | 180, 720     |
+| 720, 470     | 1000, 250    |
+| 1050, y_size | 1000, 720    |
 
 With the above points, the `getPerspectiveTransform` method is used to get both the transformation coefficient and the inverse transformations coefficient (which will be used at the end of the project to transform the image back to the original, so the lanes can be plotted on top).
 
