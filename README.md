@@ -180,9 +180,10 @@ The magnitudes are converted to meters so that the position of the car in the la
 Once the detection is done, the image is transformed back into the original perspective and the area contained by the lane lines is drawn into the original undistorted image, obtaining the following result.
 
 
-Undistorted                |   Result
-:-------------------------:|:-------------------------:
-![alt text](./output_images/new_undist/undist-3.jpg)  |  ![alt text](./output_images/new_undist/final_results/lane-detection-3.jpg)
+   Result
+|:-------------------------:
+![alt text](./output_images/video-screenshot.png)
+
 
 
 ---
@@ -193,7 +194,7 @@ Undistorted                |   Result
 
 The following is a link to the lane detection video.
 
-[![IMAGE ALT TEXT HERE](./output_images/new_undist/final_results/lane-detection-2.jpg)](https://youtu.be/cO7-e5DmqAQ)
+[![IMAGE ALT TEXT HERE](./output_images/new_undist/final_results/lane-detection-2.jpg)](https://youtu.be/gSNzw7HtuI0)
 
 ---
 

@@ -156,11 +156,11 @@ def measure_curvature(binary_warped, lane):
     left_curverad = ((1 + (2*left_fit_cr[0]*y_eval*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
     right_curverad = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
 
-    left_lane_bottom = (left_fit[0]*y_eval)**2 + left_fit[0]*y_eval + left_fit[2]
-    right_lane_bottom = (right_fit[0]*y_eval)**2 + right_fit[0]*y_eval + right_fit[2]
+    left_lane_bottom = left_fit[0]*y_eval**2 + left_fit[1]*y_eval + left_fit[2]
+    right_lane_bottom = right_fit[0]*y_eval**2 + right_fit[1]*y_eval + right_fit[2]
     lane_center = (left_lane_bottom + right_lane_bottom)/2.
     center_image = 640
-    center = (lane_center - center_image)*xm_per_pix
+    center = (center_image - lane_center)*xm_per_pix
     position = "left" if center < 0 else "right"
     center = "Vehicle is {:.2f}m {} of center".format(center, position)
 
