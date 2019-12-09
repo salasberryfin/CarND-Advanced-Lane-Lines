@@ -1,4 +1,6 @@
-## Advanced Lane Finding Project**
+## Advanced Lane Finding Project
+
+![alt text](./output_images/video-screenshot.png)
 
 The goal of this project is to build a complete pipeline that automatically detects lane lines from a real video.
 
@@ -10,8 +12,6 @@ The goal of this project is to build a complete pipeline that automatically dete
 * Determine the curvature of the lane and vehicle position with respect to center.
 * Warp the detected lane boundaries back onto the original image.
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
-
-![alt text](./output_images/video-screenshot.png)
 
 ---
 
@@ -79,9 +79,63 @@ Original             |   Undistorted
 
 #### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
+In order to generate a binary object where the lane lines can be easily identified, a combination of methods are applied to the original undistorted image.
 
-![alt text][image3]
+* Transform to **HLS** color space, applying a threshold (120, 255) over the S channel.
+``` python
+def hls_thresh(img, thresh):
+    s = img[:, :, 2]
+    binary_s = np.zeros_like(s)
+    binary_s[(s > thresh[0]) & (s <= thresh[1])] = 1
+
+    return binary_s
+```
+* Magnitude of the **gradient** so thresholds (30, 100) can be set to identify pixels within a certain gradient range.
+``` python
+def gradient_magnitude(img, thresh, orient='x'):
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    if 'x' in orient:
+        sobel = cv2.Sobel(gray, cv2.CV_64F, 1, 0)
+    if 'y' in orient:
+        sobel = cv2.Sobel(gray, cv2.CV_64F, 0, 1)
+    abs_sobel = np.absolute(sobel)
+    scaled_sobel = np.uint8(255*abs_sobel/np.max(abs_sobel))
+    binary = np.zeros_like(scaled_sobel)
+    binary[(scaled_sobel >= thresh[0]) & (scaled_sobel <= thresh[1])] = 1
+
+    return binary
+```
+* **Direction of the gradient**, to filter out the undesired stuff from the image. The sobel operator (derivative of the image in the x/y direction) had to be calculated  as well to obtain the direction of the gradient. The parameters used for this scenario were kernel=15 and threshold=(0.7, 1.3).
+``` python
+def dir_threshold(gray, abs_sobelx, abs_sobely, sobel_kernel=3, thresh=(0, np.pi/2)):
+    direction = np.arctan2(abs_sobely, abs_sobelx)
+    binary_output = np.zeros_like(direction)
+    binary_output[(direction >= thresh[0]) & (direction <= thresh[1])] = 1
+
+    return binary_output
+```
+
+Once these operations were performed on th original image, the results were combined following the below expression, to generate the output binary file were the lane lines are clearly identifiable, as seen in the example.
+
+``` python 
+combine = np.zeros_like(frame.gradient)
+combine[(frame.gradient == 1) | ((frame.hls == 1) & (frame.direction == 1))] = 1
+```
+
+The above code snippet uses the UndistImage class (as `frame`), which was defined to store all relevant information about each of the analyzed images, so they can be easily accessible during the detection process and the combination of different manipulation methods.
+
+``` python
+def __init__(self, image, gray, hls, gradient, direction):
+        self.image = image
+        self.gray = gray
+        self.hls = hls
+        self.gradient = gradient
+        self.direction = direction
+```
+
+Original             |   Undistorted
+:-------------------------:|:-------------------------:
+![alt text](./test_images/calibration3.jpg)  |  ![alt text](./output_images/new_undist/undist3.jpg)
 
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
