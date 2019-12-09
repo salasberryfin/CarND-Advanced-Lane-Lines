@@ -1,18 +1,6 @@
 ## Advanced Lane Finding Project**
 
-[//]: # (Image References)
-
-[image1]: ./camera_cal/calibration3.jpg "Original"
-[image2]: ./output_images/chessboard_calibration/warped-calibration3.jpg "Undistorted"
-[image3]: ./examples/binary_combo_example.jpg "Binary Example"
-[image4]: ./examples/warped_straight_lines.jpg "Warp Example"
-[image5]: ./examples/color_fit_lines.jpg "Fit Visual"
-[image6]: ./examples/example_output.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
-
 The goal of this project is to build a complete pipeline that automatically detects lane lines from a real video.
-
-### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 * Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
 * Apply a distortion correction to raw images.
@@ -23,13 +11,9 @@ The goal of this project is to build a complete pipeline that automatically dete
 * Warp the detected lane boundaries back onto the original image.
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
+![alt text](./output_images/video-screenshot.png)
+
 ---
-
-### Writeup / README
-
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Advanced-Lane-Lines/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
-
-You're reading it!
 
 ### Camera Calibration
 
@@ -71,7 +55,7 @@ By also applying a perspective transform and drawing the found corners, it is po
  
 [//]: # (Image References)
 
-Original             |   "Undistorted"
+Original             |   Undistorted
 :-------------------------:|:-------------------------:
 ![alt text](./camera_cal/calibration3.jpg)  |  ![alt text](./output_images/chessboard_calibration/warped-calibration3.jpg)
 
@@ -81,8 +65,17 @@ Original             |   "Undistorted"
 
 #### 1. Provide an example of a distortion-corrected image.
 
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]
+After obtaining the distortion-correction coefficients from the chessboard image, the test images can be corrected as depicted below:
+
+``` python
+out = cv2.undistort(img, mtx, dist, None, mtx)
+```
+
+Original             |   Undistorted
+:-------------------------:|:-------------------------:
+![alt text](./test_images/calibration3.jpg)  |  ![alt text](./output_images/new_undist/undist3.jpg)
+
+
 
 #### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
 
