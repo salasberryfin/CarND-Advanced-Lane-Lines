@@ -50,7 +50,7 @@ def calibrate_undistort(image, imgpoints, objpoints):
 
     return dst, mtx, dist
 ```
-As seen in the code snippet, after finding the 9x6 corners in the chessboard image, the exact points of the image are obtained a the undistortion is applied.
+As seen in the code snippet, after finding the 9x6 corners in the chessboard image, the exact points of the image are obtained and the undistortion is applied.
 By also applying a perspective transform and drawing the found corners, it is possible to appreciate the correction.
  
 [//]: # (Image References)
@@ -73,7 +73,7 @@ out = cv2.undistort(img, mtx, dist, None, mtx)
 
 Original             |   Undistorted
 :-------------------------:|:-------------------------:
-![alt text](./test_images/calibration3.jpg)  |  ![alt text](./output_images/new_undist/undist3.jpg)
+![alt text](./test_images/test3.jpg)  |  ![alt text](./output_images/new_undist/undist-3.jpg)
 
 
 
@@ -90,7 +90,7 @@ def hls_thresh(img, thresh):
 
     return binary_s
 ```
-* Magnitude of the **gradient** so thresholds (30, 100) can be set to identify pixels within a certain gradient range.
+* Obtain the magnitude of the **gradient** so thresholds (30, 100) can be set to identify pixels within a certain gradient range.
 ``` python
 def gradient_magnitude(img, thresh, orient='x'):
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -105,7 +105,7 @@ def gradient_magnitude(img, thresh, orient='x'):
 
     return binary
 ```
-* **Direction of the gradient**, to filter out the undesired stuff from the image. The sobel operator (derivative of the image in the x/y direction) had to be calculated  as well to obtain the direction of the gradient. The parameters used for this scenario were kernel=15 and threshold=(0.7, 1.3).
+* Calculate the **direction of the gradient** to filter out the undesired stuff from the image. The sobel operator (derivative of the image in the x/y direction) had to be calculated  as well to obtain the direction of the gradient. The parameters used for this scenario were: `kernel = 15` and `threshold = (0.7, 1.3)`.
 ``` python
 def dir_threshold(gray, abs_sobelx, abs_sobely, sobel_kernel=3, thresh=(0, np.pi/2)):
     direction = np.arctan2(abs_sobely, abs_sobelx)
@@ -115,14 +115,14 @@ def dir_threshold(gray, abs_sobelx, abs_sobely, sobel_kernel=3, thresh=(0, np.pi
     return binary_output
 ```
 
-Once these operations were performed on th original image, the results were combined following the below expression, to generate the output binary file were the lane lines are clearly identifiable, as seen in the example.
+Once these operations are performed on the original image, the results are combined following the below expression, to generate the output binary file where the lane lines are clearly identifiable, as seen in the example.
 
 ``` python 
 combine = np.zeros_like(frame.gradient)
 combine[(frame.gradient == 1) | ((frame.hls == 1) & (frame.direction == 1))] = 1
 ```
 
-The above code snippet uses the UndistImage class (as `frame`), which was defined to store all relevant information about each of the analyzed images, so they can be easily accessible during the detection process and the combination of different manipulation methods.
+The above code snippet uses the `UndistImage` class (as `frame`), which was defined to store all relevant information for each of the analyzed images, so they can be easily accessible during the detection process and the combination of different manipulation methods.
 
 ``` python
 def __init__(self, image, gray, hls, gradient, direction):
@@ -135,7 +135,7 @@ def __init__(self, image, gray, hls, gradient, direction):
 
 Original             |   Undistorted
 :-------------------------:|:-------------------------:
-![alt text](./test_images/calibration3.jpg)  |  ![alt text](./output_images/new_undist/undist3.jpg)
+![alt text](./output_images/new_undist/undist-3.jpg)  |  ![alt text](./output_images/new_undist/binary-detection/binary-detection-3.jpg)
 
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
