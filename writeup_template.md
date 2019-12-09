@@ -1,12 +1,8 @@
-## Writeup Template
+## Advanced Lane Finding Project
 
-### You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
+![alt text](./output_images/video-screenshot.png)
 
----
-
-**Advanced Lane Finding Project**
-
-The goals / steps of this project are the following:
+The goal of this project is to build a complete pipeline that automatically detects lane lines from a real video.
 
 * Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
 * Apply a distortion correction to raw images.
@@ -17,111 +13,200 @@ The goals / steps of this project are the following:
 * Warp the detected lane boundaries back onto the original image.
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
-[//]: # (Image References)
-
-[image1]: ./examples/undistort_output.png "Undistorted"
-[image2]: ./test_images/test1.jpg "Road Transformed"
-[image3]: ./examples/binary_combo_example.jpg "Binary Example"
-[image4]: ./examples/warped_straight_lines.jpg "Warp Example"
-[image5]: ./examples/color_fit_lines.jpg "Fit Visual"
-[image6]: ./examples/example_output.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
-
-## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
-
-### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
-
 ---
-
-### Writeup / README
-
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Advanced-Lane-Lines/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
-
-You're reading it!
 
 ### Camera Calibration
 
 #### 1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
 
-The code for this step is contained in the first code cell of the IPython notebook located in "./examples/example.ipynb" (or in lines # through # of the file called `some_file.py`).  
+The camera needs to be calibrated using a series of chessboard images from which we will find the corners and extract a calibration coefficient that will allow to undistort the provided images. 
+``` python
+def find_corners(gray, n):
+    objpoints = []  # 3D real points
+    imgpoints = []  # 2D image points
+    objp = np.zeros((n[0]*n[1], 3), dtype=np.float32)
+    objp[:, :2] = np.mgrid[0:n[0], 0:n[1]].T.reshape(-1, 2)
+    ret, corners = cv2.findChessboardCorners(gray, (n[0], n[1]), None)
+    if ret is True:
+        imgpoints.append(corners)
+        objpoints.append(objp)
+        
+        return imgpoints, objpoints
 
-I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
+    return None
 
-I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
 
-![alt text][image1]
+def calibrate_undistort(image, imgpoints, objpoints):
+    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints,
+                                                       imgpoints,
+                                                       image.shape[::-1],
+                                                       None,
+                                                       None)
+    dst = cv2.undistort(image,
+                        mtx,
+                        dist,
+                        None,
+                        mtx)
+
+    return dst, mtx, dist
+```
+As seen in the code snippet, after finding the 9x6 corners in the chessboard image, the exact points of the image are obtained and the undistortion is applied.
+By also applying a perspective transform and drawing the found corners, it is possible to appreciate the correction.
+ 
+[//]: # (Image References)
+
+Original             |   Undistorted
+:-------------------------:|:-------------------------:
+![alt text](./camera_cal/calibration3.jpg)  |  ![alt text](./output_images/chessboard_calibration/warped-calibration3.jpg)
+
+
 
 ### Pipeline (single images)
 
-#### 1. Provide an example of a distortion-corrected image.
+#### Calibrate & Undistort
 
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]
+After obtaining the distortion-correction coefficients from the chessboard image, the test images can be corrected as depicted below:
 
-#### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
-
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
-
-![alt text][image3]
-
-#### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
-
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
-
-```python
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
+``` python
+out = cv2.undistort(img, mtx, dist, None, mtx)
 ```
 
-This resulted in the following source and destination points:
+Original             |   Undistorted
+:-------------------------:|:-------------------------:
+![alt text](./test_images/test2.jpg)  |  ![alt text](./output_images/new_undist/undist-3.jpg)
 
-| Source        | Destination   | 
-|:-------------:|:-------------:| 
-| 585, 460      | 320, 0        | 
-| 203, 720      | 320, 720      |
-| 1127, 720     | 960, 720      |
-| 695, 460      | 960, 0        |
 
-I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
-![alt text][image4]
+#### Generate binary image
 
-#### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
+In order to generate a binary object where the lane lines can be easily identified, a combination of methods are applied to the original undistorted image.
+
+* Transform to **HLS** color space, applying a threshold (120, 255) over the S channel.
+``` python
+def hls_thresh(img, thresh):
+    s = img[:, :, 2]
+    binary_s = np.zeros_like(s)
+    binary_s[(s > thresh[0]) & (s <= thresh[1])] = 1
+
+    return binary_s
+```
+* Obtain the magnitude of the **gradient** so thresholds (30, 100) can be set to identify pixels within a certain gradient range.
+``` python
+def gradient_magnitude(img, thresh, orient='x'):
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    if 'x' in orient:
+        sobel = cv2.Sobel(gray, cv2.CV_64F, 1, 0)
+    if 'y' in orient:
+        sobel = cv2.Sobel(gray, cv2.CV_64F, 0, 1)
+    abs_sobel = np.absolute(sobel)
+    scaled_sobel = np.uint8(255*abs_sobel/np.max(abs_sobel))
+    binary = np.zeros_like(scaled_sobel)
+    binary[(scaled_sobel >= thresh[0]) & (scaled_sobel <= thresh[1])] = 1
+
+    return binary
+```
+* Calculate the **direction of the gradient** to filter out the undesired stuff from the image. The sobel operator (derivative of the image in the x/y direction) had to be calculated  as well to obtain the direction of the gradient. The parameters used for this scenario were: `kernel = 15` and `threshold = (0.7, 1.3)`.
+``` python
+def dir_threshold(gray, abs_sobelx, abs_sobely, sobel_kernel=3, thresh=(0, np.pi/2)):
+    direction = np.arctan2(abs_sobely, abs_sobelx)
+    binary_output = np.zeros_like(direction)
+    binary_output[(direction >= thresh[0]) & (direction <= thresh[1])] = 1
+
+    return binary_output
+```
+
+Once these operations are performed on the original image, the results are combined following the below expression, to generate the output binary file where the lane lines are clearly identifiable, as seen in the example.
+
+``` python 
+combine = np.zeros_like(frame.gradient)
+combine[(frame.gradient == 1) | ((frame.hls == 1) & (frame.direction == 1))] = 1
+```
+
+The above code snippet uses the `UndistImage` class (as `frame`), which was defined to store all relevant information for each of the analyzed images, so they can be easily accessible during the detection process and the combination of different manipulation methods.
+
+``` python
+def __init__(self, image, gray, hls, gradient, direction):
+        self.image = image
+        self.gray = gray
+        self.hls = hls
+        self.gradient = gradient
+        self.direction = direction
+```
+
+Undistorted             |   Binary
+:-------------------------:|:-------------------------:
+![alt text](./output_images/new_undist/undist-3.jpg)  |  ![alt text](./output_images/new_undist/binary-detection/binary-detection-3.jpg)
+
+#### Perspective transform
+
+The binary image generated through the the combined manipulating methods in the previous step needs to be transformed to a bird's eye perspective so lane lines can be detected accurately.
+
+First, one of the straight road images is processed so that a rectangular region of interest (where the lane is most likely located) is detected. The perspective transformation will be applied for this particular region, using the following source and destination points.
+
+| Source       | Destination  | 
+|:------------:|:------------:| 
+| 570, 470     | 180, 250     | 
+| 270, y_size  | 180, 720     |
+| 720, 470     | 1000, 250    |
+| 1050, y_size | 1000, 720    |
+
+With the above points, the `getPerspectiveTransform` method is used to get both the transformation coefficient and the inverse transformations coefficient (which will be used at the end of the project to transform the image back to the original, so the lanes can be plotted on top).
+
+``` python
+def transform_perspective(img, src, offset=100):
+    img_size = (img.shape[1], img.shape[0])
+    dest = np.float32([[180, 250], [180, 720], [1000, 250], [1000, 720]])
+    M = cv2.getPerspectiveTransform(src, dest)
+    inv = cv2.getPerspectiveTransform(dest, src)
+    warped = cv2.warpPerspective(img, M, (img_size[0], img_size[1]), flags=cv2.INTER_NEAREST)
+
+    return warped, M, inv
+```
+
+Undistorted                |   Bird's eye binary
+:-------------------------:|:-------------------------:
+![alt text](./output_images/new_undist/undist-3.jpg)  |  ![alt text](./output_images/new_undist/bird/bird-eye-view-2.jpg)
+
+The lane lines appear considerably parallel, which indicates that the transformation was performed succesfully.
+
+#### Lane detection
 
 Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
 
 ![alt text][image5]
 
-#### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
+#### Identify lane lines
 
-I did this in lines # through # in my code in `my_other_file.py`
+With the bird's eye view image, the lane lines can be detected using a second order polynomial. With this procedure, the lane lines are detected through a sliding window mechanism by analyzing the binary image incrementally (one window at a time) and updating the current position position of the line accordingly. Then, the x and y values are generated for plotting.
 
-#### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+This part of the code is relatively large, it is located in `img_operation.py`, methods `fit_polynomial` and `identify_lanes`
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+The magnitudes are converted to meters so that the position of the car in the lane can be properly measured and the curvature can be identified.
 
-![alt text][image6]
+Once the detection is done, the image is transformed back into the original perspective and the area contained by the lane lines is drawn into the original undistorted image, obtaining the following result.
+
+
+Undistorted                |   Result
+:-------------------------:|:-------------------------:
+![alt text](./output_images/new_undist/undist-3.jpg)  |  ![alt text](./output_images/new_undist/final_results/lane-detection-3.jpg)
+
 
 ---
 
 ### Pipeline (video)
 
-#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
+#### Video
 
-Here's a [link to my video result](./project_video.mp4)
+The following is a link to the lane detection video.
+
+[![IMAGE ALT TEXT HERE](./output_images/new_undist/final_results/lane-detection-2.jpg)](https://youtu.be/cO7-e5DmqAQ)
 
 ---
 
 ### Discussion
 
-#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+#### Issues
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+The pipeline is not yet ready to detect lane lines in a more complex environment. The project video is a high quality, very clear piece of video with very few light changes or reflections, which makes lane detection relatively easy when applying an algorithm like the one I used. When trying to apply this very same process to any of the challenge videos, the lane detection had trouble while being affected by changes of light and darkspots, which made it unusable in a real case scenario.
+
+I tested different combinations of thresholds and transforms but yet had no luck trying to properly adapt to the harder videos, but I assume that these operations are enough to detect lane lines in most situations, when applied properly.
