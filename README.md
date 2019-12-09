@@ -165,7 +165,7 @@ def transform_perspective(img, src, offset=100):
 
 Original             |   Bird's eye binary
 :-------------------------:|:-------------------------:
-![alt text](./test_images/test2.jpg)  |  ![alt text](./output_images/new_undist/bird/birds-eye-2.jpg)
+![alt text](./test_images/test2.jpg)  |  ![alt text](./output_images/new_undist/bird/bird-eye-view-2.jpg)
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
